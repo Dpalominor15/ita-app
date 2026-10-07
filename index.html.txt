@@ -1,0 +1,922 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0b6e69">
+<meta name="description" content="Captura de ITA° de piel y cuestionario Fitzpatrick para estudios PPG">
+<title>ITA Piel</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<style>
+:root{
+  --bg:#f5f6f7; --surface:#ffffff; --surface-2:#eef1f3; --text:#1a1f24; --muted:#5b6670; --border:#d5dbe0;
+  --accent:#0b6e69; --accent-text:#ffffff; --accent-soft:#e2f2f0;
+  --ok:#1d6b35; --ok-bg:#e5f4ea; --warn:#8a5300; --warn-bg:#fff3dc; --bad:#a8261b; --bad-bg:#fbe9e7;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#121518; --surface:#1b2024; --surface-2:#242a2f; --text:#e8ecef; --muted:#9aa6b0; --border:#323a41;
+    --accent:#3fb8ae; --accent-text:#06201e; --accent-soft:#163331;
+    --ok:#7fd69a; --ok-bg:#16301f; --warn:#f2c069; --warn-bg:#33270f; --bad:#ff8f84; --bad-bg:#3a1714;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#121518; --surface:#1b2024; --surface-2:#242a2f; --text:#e8ecef; --muted:#9aa6b0; --border:#323a41;
+  --accent:#3fb8ae; --accent-text:#06201e; --accent-soft:#163331;
+  --ok:#7fd69a; --ok-bg:#16301f; --warn:#f2c069; --warn-bg:#33270f; --bad:#ff8f84; --bad-bg:#3a1714;
+  color-scheme: dark;
+}
+*{box-sizing:border-box}
+[hidden]{display:none !important}
+html,body{margin:0}
+body{background:var(--bg);color:var(--text);font:16px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;-webkit-text-size-adjust:100%}
+header{position:sticky;top:0;z-index:5;background:var(--surface);border-bottom:1px solid var(--border);padding:10px 16px;display:flex;align-items:center;gap:10px}
+header h1{font-size:17px;margin:0;flex:1}
+header .crumb{font-size:13px;color:var(--muted)}
+main{max-width:720px;margin:0 auto;padding:16px 16px 96px}
+.view{display:none}.view.on{display:block}
+h2{font-size:20px;margin:4px 0 12px}
+h3{font-size:16px;margin:18px 0 8px}
+p{margin:6px 0}
+.muted{color:var(--muted)} .small{font-size:13px}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px;margin:12px 0}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.grow{flex:1}
+button,.btn{appearance:none;border:1px solid var(--border);background:var(--surface);color:var(--text);border-radius:10px;padding:12px 16px;font:inherit;font-weight:600;cursor:pointer;min-height:48px}
+button.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-text)}
+button.danger{color:var(--bad);border-color:var(--bad)}
+button.link{border:none;background:none;color:var(--accent);padding:8px;min-height:0;font-weight:600}
+button:disabled{opacity:.45;cursor:not-allowed}
+button.block{width:100%}
+label{display:block;font-weight:600;margin:12px 0 4px}
+input[type=text],input[type=number],textarea,select{width:100%;padding:12px;border:1px solid var(--border);border-radius:10px;background:var(--surface);color:var(--text);font:inherit}
+textarea{min-height:70px;resize:vertical}
+.check{display:flex;gap:10px;align-items:center;font-weight:600;margin:12px 0}
+.check input{width:22px;height:22px}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px}
+.stat{background:var(--surface-2);border-radius:10px;padding:10px}
+.stat b{display:block;font-size:24px;font-variant-numeric:tabular-nums}
+.stat span{font-size:13px;color:var(--muted)}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th,td{text-align:left;padding:8px 6px;border-bottom:1px solid var(--border)}
+td.num{font-variant-numeric:tabular-nums}
+.tablewrap{overflow-x:auto}
+.badge{display:inline-block;padding:3px 8px;border-radius:999px;font-size:12px;font-weight:600;margin:2px 4px 2px 0}
+.b-ok{background:var(--ok-bg);color:var(--ok)} .b-warn{background:var(--warn-bg);color:var(--warn)} .b-bad{background:var(--bad-bg);color:var(--bad)} .b-info{background:var(--accent-soft);color:var(--accent)}
+.q{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:12px;margin:10px 0}
+.q h4{margin:0 0 8px;font-size:15px}
+.opts{display:grid;gap:6px}
+.opt{text-align:left;font-weight:500;min-height:44px;padding:10px 12px}
+.opt.sel{background:var(--accent-soft);border-color:var(--accent);color:var(--text);box-shadow:inset 0 0 0 1px var(--accent)}
+.stickybar{position:fixed;left:0;right:0;bottom:0;background:var(--surface);border-top:1px solid var(--border);padding:10px 16px calc(10px + env(safe-area-inset-bottom));z-index:6}
+.stickybar .inner{max-width:720px;margin:0 auto;display:flex;gap:10px;align-items:center}
+.stage{position:relative;width:100%;height:58vh;min-height:300px;background:#000;border-radius:12px;overflow:hidden;touch-action:manipulation}
+.stage video,.stage canvas,.stage svg{position:absolute;inset:0;width:100%;height:100%;object-fit:contain}
+.stage .msg{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;text-align:center;color:#fff;padding:24px}
+.seg{display:inline-flex;border:1px solid var(--border);border-radius:10px;overflow:hidden}
+.seg button{border:none;border-radius:0;min-height:40px;padding:8px 14px;font-weight:600}
+.seg button.sel{background:var(--accent);color:var(--accent-text)}
+.big{font-size:34px;font-weight:700;font-variant-numeric:tabular-nums;line-height:1.1}
+details summary{cursor:pointer;font-weight:600}
+.alert{border-radius:10px;padding:10px 12px;margin:10px 0;font-size:14px}
+.alert.warn{background:var(--warn-bg);color:var(--warn)} .alert.bad{background:var(--bad-bg);color:var(--bad)} .alert.ok{background:var(--ok-bg);color:var(--ok)}
+.shots{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0}
+ol.steps{padding-left:20px;margin:6px 0} ol.steps li{margin:4px 0}
+input[type=range]{width:100%}
+</style>
+</head>
+<body>
+<header>
+  <h1 id="hdr-title">ITA Piel · Fitzpatrick</h1>
+  <span class="crumb" id="hdr-crumb"></span>
+</header>
+<main>
+
+<!-- INICIO -->
+<section class="view" id="v-home">
+  <div class="stats">
+    <div class="stat"><b id="st-count">0</b><span>participantes guardados</span></div>
+    <div class="stat"><b id="st-unexp">0</b><span>sin exportar</span></div>
+  </div>
+  <div id="home-alerts"></div>
+  <button type="button" class="primary block" id="btn-new" style="margin-top:14px">Nuevo participante</button>
+  <div class="row" style="margin-top:10px">
+    <button type="button" class="grow" id="btn-export">Exportar CSV</button>
+    <button type="button" class="grow" id="btn-config">Configuración</button>
+  </div>
+
+  <details class="card">
+    <summary>Protocolo de captura</summary>
+    <ol class="steps small">
+      <li><b>Sin flash.</b> Iluminación del laboratorio constante; sin luz solar directa ni sombras sobre el brazo.</li>
+      <li>Antebrazo apoyado, <b>cara dorsal</b> hacia arriba. Punto: centrado entre radio y cúbito, <b>3 traveses de dedo</b> proximal a la articulación de la muñeca (mismo punto que el sensor PPG). Medir <b>antes</b> de colocar el sensor.</li>
+      <li>Celular paralelo a la piel, a distancia fija (usa un separador, p. ej. un tubo de 15 cm).</li>
+      <li>Tarjeta gris en el mismo plano que la piel, dentro del círculo amarillo.</li>
+      <li>Evita vello denso, venas visibles, lunares y tatuajes dentro del círculo verde (puedes moverlo tocando la imagen).</li>
+      <li>Fija la exposición y el balance de blancos una vez por sesión (botón “Fijar cámara”) y no los cambies entre participantes.</li>
+    </ol>
+  </details>
+
+  <h3>Últimos registros</h3>
+  <div class="card tablewrap" id="recent"></div>
+</section>
+
+<!-- CONFIG -->
+<section class="view" id="v-config">
+  <h2>Configuración</h2>
+  <div class="card">
+    <label for="c-operator">Operador</label>
+    <input type="text" id="c-operator" autocomplete="off">
+    <label for="c-device">Etiqueta del celular</label>
+    <input type="text" id="c-device" placeholder="p. ej. Pixel-7-lab1" autocomplete="off">
+    <label for="c-site">Sitio anatómico</label>
+    <input type="text" id="c-site" autocomplete="off">
+    <label for="c-photos">Fotos por participante</label>
+    <select id="c-photos"><option>1</option><option>2</option><option selected>3</option><option>4</option><option>5</option></select>
+    <div class="check"><input type="checkbox" id="c-gray"><label for="c-gray" style="margin:0">Usar tarjeta gris 18 % en cada foto</label></div>
+    <div class="check"><input type="checkbox" id="c-lock"><label for="c-lock" style="margin:0">Reaplicar valores de cámara fijados al abrir la cámara</label></div>
+    <label for="c-skinr">Tamaño del círculo de piel: <span id="c-skinr-v"></span></label>
+    <input type="range" id="c-skinr" min="10" max="45" step="1">
+    <label for="c-grayr">Tamaño del círculo de tarjeta: <span id="c-grayr-v"></span></label>
+    <input type="range" id="c-grayr" min="5" max="25" step="1">
+    <p class="small muted">Valores de cámara fijados: <span id="c-camlock"></span></p>
+    <button type="button" class="link" id="c-forget">Olvidar valores de cámara fijados</button>
+  </div>
+  <div class="row">
+    <button type="button" class="primary grow" id="c-save">Guardar</button>
+    <button type="button" class="grow" id="c-cancel">Cancelar</button>
+  </div>
+  <div class="card">
+    <h3 style="margin-top:0">Datos</h3>
+    <p class="small muted">Los datos viven solo en este celular. Exporta el CSV antes de borrar.</p>
+    <button type="button" class="danger" id="c-wipe">Borrar todos los registros</button>
+  </div>
+  <p class="small muted" id="c-version"></p>
+</section>
+
+<!-- ID -->
+<section class="view" id="v-id">
+  <h2>Participante</h2>
+  <div class="card">
+    <label for="p-id">ID del participante</label>
+    <input type="text" id="p-id" placeholder="P-0001" autocomplete="off" autocapitalize="characters" spellcheck="false">
+    <p class="small muted">Usa el mismo ID en el archivo de la grabación PPG. La fecha y hora se guardan automáticamente.</p>
+    <p class="small" id="p-time"></p>
+  </div>
+  <div class="row">
+    <button type="button" class="grow" id="p-cancel">Cancelar</button>
+    <button type="button" class="primary grow" id="p-next">Continuar</button>
+  </div>
+</section>
+
+<!-- FITZPATRICK -->
+<section class="view" id="v-fitz">
+  <h2>Cuestionario Fitzpatrick</h2>
+  <p class="small muted">Léelo al participante. Toca una respuesta por pregunta.</p>
+  <div id="fitz-qs"></div>
+  <div style="height:70px"></div>
+  <div class="stickybar" id="fitz-bar">
+    <div class="inner">
+      <div class="grow small"><span id="fitz-progress"></span><br><b id="fitz-live"></b></div>
+      <button type="button" class="primary" id="fitz-next" disabled>Ir a la foto</button>
+    </div>
+  </div>
+</section>
+
+<!-- CÁMARA -->
+<section class="view" id="v-cam">
+  <div class="row" style="margin-bottom:8px">
+    <b class="grow" id="cam-count"></b>
+    <div class="seg" role="group" aria-label="Círculo que se mueve al tocar">
+      <button type="button" id="mv-skin" class="sel">Mover piel</button>
+      <button type="button" id="mv-gray">Mover tarjeta</button>
+    </div>
+  </div>
+  <div class="stage" id="stage">
+    <video id="video" playsinline muted autoplay></video>
+    <canvas id="shot" hidden></canvas>
+    <svg id="overlay" preserveAspectRatio="xMidYMid meet" aria-label="Guías de captura"></svg>
+    <div class="msg" id="stage-msg" hidden></div>
+  </div>
+  <div id="cam-caps" class="small" style="margin:8px 0"></div>
+
+  <div id="cam-live-ctrls">
+    <button type="button" class="primary block" id="btn-capture">Capturar</button>
+    <div class="row" style="margin-top:8px">
+      <button type="button" class="grow" id="btn-lock">Fijar cámara</button>
+      <button type="button" class="grow" id="btn-file">Usar app de cámara</button>
+    </div>
+    <input type="file" id="file-in" accept="image/*" capture="environment" hidden>
+  </div>
+
+  <div id="cam-review" hidden>
+    <div class="card" id="shot-result"></div>
+    <div class="row">
+      <button type="button" class="grow" id="btn-retake">Repetir</button>
+      <button type="button" class="primary grow" id="btn-accept">Aceptar foto</button>
+    </div>
+  </div>
+
+  <div class="shots" id="shots"></div>
+  <div class="row">
+    <button type="button" class="link" id="btn-cam-back">← Volver al cuestionario</button>
+    <span class="grow"></span>
+    <button type="button" class="link" id="btn-finish-early" hidden>Terminar con estas fotos →</button>
+  </div>
+</section>
+
+<!-- RESUMEN -->
+<section class="view" id="v-sum">
+  <h2>Resumen</h2>
+  <div class="card" id="sum-body"></div>
+  <label for="sum-notes">Notas (opcional)</label>
+  <textarea id="sum-notes" placeholder="Vello, tatuaje cercano, crema, etc."></textarea>
+  <div class="row" style="margin-top:12px">
+    <button type="button" class="danger grow" id="sum-discard">Descartar</button>
+    <button type="button" class="grow" id="sum-back">Tomar otra foto</button>
+  </div>
+  <button type="button" class="primary block" id="sum-save" style="margin-top:10px">Guardar y siguiente participante</button>
+</section>
+
+</main>
+
+<script>
+(() => {
+'use strict';
+
+const APP_VERSION = '1.0.0';
+const K_REC = 'itaapp.records.v1';
+const K_CFG = 'itaapp.config.v1';
+
+/* ---------- almacenamiento (siempre protegido) ---------- */
+const store = {
+  get(k, def){ try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : def; } catch(e){ return def; } },
+  set(k, v){ try { localStorage.setItem(k, JSON.stringify(v)); return true; } catch(e){ return false; } }
+};
+
+const DEFAULTS = {
+  operator: '', device: '',
+  site: 'Antebrazo distal, cara dorsal, entre radio y cúbito, 3 traveses de dedo proximal a la muñeca',
+  photos: 3, grayCard: true, reapplyLock: true,
+  skinR: 0.22, grayR: 0.10,
+  skinPos: {x: 0.5, y: 0.5}, grayPos: {x: 0.5, y: 0.85},
+  camLock: null
+};
+let cfg = Object.assign({}, DEFAULTS, store.get(K_CFG, {}));
+let records = store.get(K_REC, []);
+let storageOk = store.set(K_REC, records);
+let cur = null;
+
+const $ = s => document.querySelector(s);
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const fmt = (v, d=1) => (v == null || !isFinite(v)) ? '—' : v.toFixed(d);
+
+function saveCfg(){ store.set(K_CFG, cfg); }
+function saveRecords(){
+  storageOk = store.set(K_REC, records);
+  if (!storageOk) alert('No se pudo guardar en el almacenamiento del navegador. Exporta el CSV ahora para no perder datos.');
+}
+function isoLocal(d){
+  const p = n => String(n).padStart(2,'0');
+  const off = -d.getTimezoneOffset(), s = off >= 0 ? '+' : '-', a = Math.abs(off);
+  return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}T${p(d.getHours())}:${p(d.getMinutes())}:${p(d.getSeconds())}${s}${p(Math.floor(a/60))}:${p(a%60)}`;
+}
+
+/* ---------- colorimetría: sRGB → CIE L*a*b* (D65) → ITA° ---------- */
+const LIN = new Float32Array(256);
+for (let i = 0; i < 256; i++){ const c = i/255; LIN[i] = c <= 0.04045 ? c/12.92 : Math.pow((c+0.055)/1.055, 2.4); }
+const EPS = 216/24389, KAP = 24389/27;
+function linToLab(r, g, b){
+  const X = 0.4124564*r + 0.3575761*g + 0.1804375*b;
+  const Y = 0.2126729*r + 0.7151522*g + 0.0721750*b;
+  const Z = 0.0193339*r + 0.1191920*g + 0.9503041*b;
+  const f = t => t > EPS ? Math.cbrt(t) : (KAP*t + 16)/116;
+  const fx = f(X/0.95047), fy = f(Y/1.0), fz = f(Z/1.08883);
+  return { L: 116*fy - 16, a: 500*(fx - fy), b: 200*(fy - fz) };
+}
+const LfromY = Y => Y > EPS ? 116*Math.cbrt(Y) - 16 : KAP*Y;
+// ITA° = arctan((L* − 50) / b*) · 180/π  (atan2 coincide cuando b* > 0)
+const itaDeg = (L, b) => Math.atan2(L - 50, b) * 180 / Math.PI;
+
+// Chardon et al. 1991 / Del Bino et al. 2006
+const ITA_CATS = [
+  {min: 55,   code: 'very_light',   es: 'Muy clara'},
+  {min: 41,   code: 'light',        es: 'Clara'},
+  {min: 28,   code: 'intermediate', es: 'Intermedia'},
+  {min: 10,   code: 'tan',          es: 'Bronceada'},
+  {min: -30,  code: 'brown',        es: 'Marrón'},
+  {min: -Infinity, code: 'dark',    es: 'Oscura'}
+];
+const itaCat = v => ITA_CATS.find(c => v > c.min) || ITA_CATS[ITA_CATS.length-1];
+
+/* ---------- análisis de una región circular ---------- */
+function sampleCircle(ctx, W, H, cx, cy, r){
+  const x0 = Math.max(0, Math.floor(cx - r)), x1 = Math.min(W, Math.ceil(cx + r));
+  const y0 = Math.max(0, Math.floor(cy - r)), y1 = Math.min(H, Math.ceil(cy + r));
+  const w = x1 - x0, h = y1 - y0;
+  const out = { n: 0, sat: 0, dark: 0 };
+  if (w <= 0 || h <= 0) return out;
+  const d = ctx.getImageData(x0, y0, w, h).data;
+  const cap = w*h;
+  const R = new Float32Array(cap), G = new Float32Array(cap), B = new Float32Array(cap), Yv = new Float32Array(cap);
+  const r2 = r*r;
+  let n = 0, sat = 0, dark = 0;
+  for (let y = 0; y < h; y++){
+    const dy = y0 + y + 0.5 - cy;
+    for (let x = 0; x < w; x++){
+      const dx = x0 + x + 0.5 - cx;
+      if (dx*dx + dy*dy > r2) continue;
+      const i = (y*w + x) * 4;
+      const r8 = d[i], g8 = d[i+1], b8 = d[i+2];
+      const mx = Math.max(r8, g8, b8);
+      if (mx >= 250) sat++;
+      if (mx <= 10) dark++;
+      const lr = LIN[r8], lg = LIN[g8], lb = LIN[b8];
+      R[n] = lr; G[n] = lg; B[n] = lb;
+      Yv[n] = 0.2126729*lr + 0.7151522*lg + 0.0721750*lb;
+      n++;
+    }
+  }
+  Object.assign(out, { n, sat, dark, R, G, B, Y: Yv });
+  return out;
+}
+
+// Media robusta en espacio lineal: descarta el 10 % más oscuro y el 10 % más brillante
+// (vello, poros, brillos especulares).
+function robustMean(s){
+  const n = s.n;
+  if (!n) return null;
+  const sorted = s.Y.slice(0, n).sort();
+  const lo = sorted[Math.floor(n*0.10)], hi = sorted[Math.min(n-1, Math.floor(n*0.90))];
+  let r = 0, g = 0, b = 0, c = 0, sL = 0, sL2 = 0;
+  for (let i = 0; i < n; i++){
+    const y = s.Y[i];
+    if (y < lo || y > hi) continue;
+    r += s.R[i]; g += s.G[i]; b += s.B[i];
+    const L = LfromY(y); sL += L; sL2 += L*L; c++;
+  }
+  if (!c) return null;
+  const mL = sL/c;
+  return { r: r/c, g: g/c, b: b/c, kept: c, sdL: Math.sqrt(Math.max(0, sL2/c - mL*mL)) };
+}
+
+const FLAG_INFO = {
+  roi_pequena:          ['bad',  'Círculo de piel muy pequeño'],
+  piel_saturada:        ['bad',  'Piel sobreexpuesta (píxeles saturados)'],
+  piel_subexpuesta:     ['bad',  'Piel subexpuesta (muy oscura)'],
+  piel_no_uniforme:     ['warn', 'Piel poco uniforme (vello, sombra o vena)'],
+  tarjeta_saturada:     ['bad',  'Tarjeta gris saturada'],
+  tarjeta_oscura:       ['bad',  'Tarjeta gris no detectada o muy oscura'],
+  tarjeta_no_uniforme:  ['warn', 'Tarjeta gris con sombra o reflejo'],
+  correccion_extrema:   ['warn', 'Corrección de color muy fuerte'],
+  sin_tarjeta_gris:     ['warn', 'Sin tarjeta gris: L* depende de la exposición'],
+  b_bajo_ita_inestable: ['bad',  'b* ≤ 1: ITA inestable'],
+  variabilidad_alta:    ['warn', 'Las fotos difieren más de 3° de ITA']
+};
+
+function analyze(canvas){
+  const W = canvas.width, H = canvas.height, m = Math.min(W, H);
+  const ctx = canvas.getContext('2d', { willReadFrequently: true });
+  const flags = [];
+  const skin = sampleCircle(ctx, W, H, cfg.skinPos.x*W, cfg.skinPos.y*H, cfg.skinR*m);
+  const sk = robustMean(skin);
+  if (!sk || skin.n < 500) flags.push('roi_pequena');
+  if (!sk) return { ok: false, flags };
+  if (skin.sat/skin.n > 0.005) flags.push('piel_saturada');
+  if (skin.dark/skin.n > 0.05) flags.push('piel_subexpuesta');
+  if (sk.sdL > 5) flags.push('piel_no_uniforme');
+
+  let gains = [1, 1, 1], grayUsed = false, gray = null;
+  if (cfg.grayCard){
+    const gs = sampleCircle(ctx, W, H, cfg.grayPos.x*W, cfg.grayPos.y*H, cfg.grayR*m);
+    gray = robustMean(gs);
+    if (!gray || gray.kept < 50 || Math.min(gray.r, gray.g, gray.b) < 0.01){
+      flags.push('tarjeta_oscura');
+    } else {
+      if (gs.sat/gs.n > 0.005) flags.push('tarjeta_saturada');
+      if (gray.sdL > 4) flags.push('tarjeta_no_uniforme');
+      // Corrección diagonal (von Kries) en RGB lineal: la tarjeta 18 % pasa a ser gris neutro de reflectancia 0,18
+      gains = [0.18/gray.r, 0.18/gray.g, 0.18/gray.b];
+      if (gains.some(g => g > 5 || g < 0.2)) flags.push('correccion_extrema');
+      grayUsed = true;
+    }
+  } else {
+    flags.push('sin_tarjeta_gris');
+  }
+  const raw = linToLab(sk.r, sk.g, sk.b);
+  const lab = linToLab(sk.r*gains[0], sk.g*gains[1], sk.b*gains[2]);
+  if (lab.b <= 1) flags.push('b_bajo_ita_inestable');
+  return {
+    ok: true, L: lab.L, a: lab.a, b: lab.b, ITA: itaDeg(lab.L, lab.b),
+    ITA_uncorrected: itaDeg(raw.L, raw.b), grayUsed, gains, flags,
+    nPixels: skin.n, sdL: sk.sdL, W, H
+  };
+}
+
+/* ---------- cuestionario Fitzpatrick (puntuado, 0–40) ---------- */
+const FITZ = [
+  {q:'Color de ojos', o:['Azul claro, gris claro o verde claro','Azul, gris o verde','Avellana o marrón claro','Marrón oscuro','Negro parduzco']},
+  {q:'Color natural del cabello', o:['Pelirrojo','Rubio','Castaño claro o rubio oscuro','Castaño oscuro','Negro']},
+  {q:'Color de la piel en zonas no expuestas al sol', o:['Rojiza','Muy pálida','Pálida con tono beige','Morena clara','Morena oscura']},
+  {q:'Pecas en zonas no expuestas al sol', o:['Muchas','Varias','Pocas','Ocasionales','Ninguna']},
+  {q:'¿Qué le pasa si se queda demasiado tiempo al sol?', o:['Enrojecimiento doloroso, ampollas y descamación','Ampollas seguidas de descamación','Se quema a veces, con algo de descamación','Rara vez se quema','Nunca se ha quemado']},
+  {q:'¿Cuánto se broncea?', o:['Nada o casi nada','Bronceado ligero','Bronceado moderado','Se broncea con mucha facilidad','La piel se oscurece mucho y rápido']},
+  {q:'¿Se broncea pocas horas después de exponerse al sol?', o:['Nunca','Rara vez','A veces','A menudo','Siempre']},
+  {q:'¿Cómo reacciona su cara al sol?', o:['Muy sensible','Sensible','Normal','Muy resistente','Nunca ha tenido problemas']},
+  {q:'¿Cuándo expuso su cuerpo al sol (o a cama o crema bronceadora) por última vez?', o:['Hace más de 3 meses','Hace 2–3 meses','Hace 1–2 meses','Hace menos de 1 mes','Hace menos de 2 semanas']},
+  {q:'¿Con qué frecuencia expone su cara al sol?', o:['Nunca','Casi nunca','A veces','A menudo','Siempre']}
+];
+const ROMAN = ['I','II','III','IV','V','VI'];
+function fitzType(score){
+  if (score <= 6) return 1; if (score <= 13) return 2; if (score <= 20) return 3;
+  if (score <= 27) return 4; if (score <= 34) return 5; return 6;
+}
+
+/* ---------- navegación ---------- */
+const VIEWS = ['home','config','id','fitz','cam','sum'];
+function show(v){
+  VIEWS.forEach(x => $('#v-'+x).classList.toggle('on', x === v));
+  if (v !== 'cam') stopCamera();
+  $('#hdr-crumb').textContent = cur && v !== 'home' && v !== 'config' ? cur.participant_id : '';
+  window.scrollTo(0, 0);
+  if (v === 'home') renderHome();
+  if (v === 'config') renderConfig();
+  if (v === 'cam') enterCam();
+  if (v === 'sum') renderSummary();
+}
+
+/* ---------- inicio ---------- */
+function renderHome(){
+  $('#st-count').textContent = records.length;
+  const unexp = records.filter(r => !r._exported).length;
+  $('#st-unexp').textContent = unexp;
+  let alerts = '';
+  if (!storageOk) alerts += `<div class="alert bad">El navegador no permite guardar datos (¿modo incógnito?). Exporta el CSV después de cada participante.</div>`;
+  if (!window.isSecureContext) alerts += `<div class="alert warn">Página sin HTTPS: la cámara en vivo no funcionará. Puedes usar “Usar app de cámara”, o publicar la app con HTTPS.</div>`;
+  if (!cfg.device) alerts += `<div class="alert warn">Pon una etiqueta al celular en Configuración (va en cada registro del CSV).</div>`;
+  $('#home-alerts').innerHTML = alerts;
+  const last = records.slice(-10).reverse();
+  $('#recent').innerHTML = last.length ? `<table><thead><tr><th>ID</th><th>Hora</th><th>ITA°</th><th>Fitz</th><th></th></tr></thead><tbody>${
+    last.map(r => `<tr><td>${esc(r.participant_id)}</td><td class="small">${esc(r.timestamp.slice(5,16).replace('T',' '))}</td><td class="num">${fmt(r.ITA_mean)} <span class="small muted">${esc(r.ITA_category_es)}</span></td><td>${esc(r.fitz_type)}</td><td><button type="button" class="link" data-del="${esc(r.uid)}" aria-label="Borrar ${esc(r.participant_id)}">Borrar</button></td></tr>`).join('')
+  }</tbody></table>` : '<p class="muted small">Aún no hay registros.</p>';
+}
+$('#recent').addEventListener('click', e => {
+  const uid = e.target.getAttribute('data-del');
+  if (!uid) return;
+  const r = records.find(x => x.uid === uid);
+  if (r && confirm(`¿Borrar el registro de ${r.participant_id}?`)){
+    records = records.filter(x => x.uid !== uid); saveRecords(); renderHome();
+  }
+});
+$('#btn-new').onclick = () => {
+  cur = { uid: Date.now().toString(36) + Math.random().toString(36).slice(2,6), participant_id: '', timestamp: '', fitz: Array(FITZ.length).fill(null), shots: [], notes: '' };
+  $('#p-id').value = '';
+  $('#p-time').textContent = '';
+  show('id');
+  setTimeout(() => $('#p-id').focus(), 50);
+};
+$('#btn-config').onclick = () => show('config');
+$('#btn-export').onclick = exportCSV;
+
+/* ---------- configuración ---------- */
+function renderConfig(){
+  $('#c-operator').value = cfg.operator;
+  $('#c-device').value = cfg.device;
+  $('#c-site').value = cfg.site;
+  $('#c-photos').value = String(cfg.photos);
+  $('#c-gray').checked = cfg.grayCard;
+  $('#c-lock').checked = cfg.reapplyLock;
+  $('#c-skinr').value = Math.round(cfg.skinR*100); $('#c-skinr-v').textContent = Math.round(cfg.skinR*100) + ' %';
+  $('#c-grayr').value = Math.round(cfg.grayR*100); $('#c-grayr-v').textContent = Math.round(cfg.grayR*100) + ' %';
+  $('#c-camlock').textContent = cfg.camLock ? camLockText(cfg.camLock) : 'ninguno';
+  $('#c-version').textContent = 'Versión ' + APP_VERSION;
+}
+$('#c-skinr').oninput = e => $('#c-skinr-v').textContent = e.target.value + ' %';
+$('#c-grayr').oninput = e => $('#c-grayr-v').textContent = e.target.value + ' %';
+$('#c-save').onclick = () => {
+  cfg.operator = $('#c-operator').value.trim();
+  cfg.device = $('#c-device').value.trim();
+  cfg.site = $('#c-site').value.trim();
+  cfg.photos = parseInt($('#c-photos').value, 10) || 3;
+  cfg.grayCard = $('#c-gray').checked;
+  cfg.reapplyLock = $('#c-lock').checked;
+  cfg.skinR = parseInt($('#c-skinr').value, 10)/100;
+  cfg.grayR = parseInt($('#c-grayr').value, 10)/100;
+  saveCfg(); show('home');
+};
+$('#c-cancel').onclick = () => show('home');
+$('#c-forget').onclick = () => { cfg.camLock = null; saveCfg(); renderConfig(); };
+$('#c-wipe').onclick = () => {
+  const unexp = records.filter(r => !r._exported).length;
+  if (!confirm(`¿Borrar ${records.length} registros de este celular?` + (unexp ? `\n\n${unexp} NO se han exportado.` : ''))) return;
+  if (!confirm('Esta acción no se puede deshacer. ¿Confirmas?')) return;
+  records = []; saveRecords(); show('home');
+};
+
+/* ---------- participante ---------- */
+$('#p-cancel').onclick = () => { cur = null; show('home'); };
+$('#p-next').onclick = () => {
+  const id = $('#p-id').value.trim();
+  if (!id){ alert('Escribe el ID del participante.'); return; }
+  if (records.some(r => r.participant_id.toLowerCase() === id.toLowerCase()) &&
+      !confirm(`Ya existe un registro con el ID ${id}. ¿Crear otro de todas formas?`)) return;
+  cur.participant_id = id;
+  cur.timestamp = isoLocal(new Date());
+  renderFitz();
+  show('fitz');
+};
+$('#p-id').addEventListener('keydown', e => { if (e.key === 'Enter') $('#p-next').click(); });
+
+/* ---------- Fitzpatrick ---------- */
+function renderFitz(){
+  $('#fitz-qs').innerHTML = FITZ.map((f, qi) => `
+    <div class="q"><h4>${qi+1}. ${esc(f.q)}</h4><div class="opts">
+      ${f.o.map((o, v) => `<button type="button" class="opt${cur.fitz[qi] === v ? ' sel' : ''}" data-q="${qi}" data-v="${v}">${esc(o)}</button>`).join('')}
+    </div></div>`).join('');
+  updateFitzBar();
+}
+$('#fitz-qs').addEventListener('click', e => {
+  const b = e.target.closest('.opt'); if (!b) return;
+  const qi = +b.dataset.q, v = +b.dataset.v;
+  cur.fitz[qi] = v;
+  b.parentElement.querySelectorAll('.opt').forEach(x => x.classList.toggle('sel', x === b));
+  updateFitzBar();
+  const next = b.closest('.q').nextElementSibling;
+  if (next && cur.fitz[qi+1] == null) next.scrollIntoView({ behavior: 'smooth', block: 'center' });
+});
+function fitzResult(){
+  const done = cur.fitz.filter(v => v != null).length;
+  const score = cur.fitz.reduce((s, v) => s + (v || 0), 0);
+  return { done, score, type: done === FITZ.length ? fitzType(score) : null };
+}
+function updateFitzBar(){
+  const r = fitzResult();
+  $('#fitz-progress').textContent = `${r.done}/${FITZ.length} respondidas`;
+  $('#fitz-live').textContent = r.type ? `Puntaje ${r.score} → Tipo ${ROMAN[r.type-1]}` : '';
+  $('#fitz-next').disabled = !r.type;
+}
+$('#fitz-next').onclick = () => show('cam');
+
+/* ---------- cámara ---------- */
+const video = $('#video'), shotCv = $('#shot'), overlay = $('#overlay');
+const cam = { stream: null, track: null, caps: {}, settings: {} };
+let mode = 'live';           // 'live' | 'review'
+let moveTarget = 'skin';
+let pending = null;          // { canvas, source, cam, result }
+
+function stageDims(){
+  if (mode === 'review' && pending) return [pending.canvas.width, pending.canvas.height];
+  return [video.videoWidth, video.videoHeight];
+}
+function clampPos(pos, r, W, H){
+  const m = Math.min(W, H), rx = r*m/W, ry = r*m/H;
+  return { x: Math.min(1-rx, Math.max(rx, pos.x)), y: Math.min(1-ry, Math.max(ry, pos.y)) };
+}
+function drawOverlay(){
+  const [W, H] = stageDims();
+  if (!W || !H){ overlay.innerHTML = ''; return; }
+  const m = Math.min(W, H), sw = Math.max(2, m*0.009), fs = Math.max(14, m*0.065);
+  const sx = cfg.skinPos.x*W, sy = cfg.skinPos.y*H, sr = cfg.skinR*m;
+  const gx = cfg.grayPos.x*W, gy = cfg.grayPos.y*H, gr = cfg.grayR*m;
+  overlay.setAttribute('viewBox', `0 0 ${W} ${H}`);
+  const lbl = (x, y, t, c) => `<text x="${x}" y="${y}" fill="${c}" font-size="${fs}" font-weight="700" text-anchor="middle" stroke="#000" stroke-width="${fs*0.18}" paint-order="stroke" font-family="system-ui,sans-serif">${t}</text>`;
+  overlay.innerHTML = `
+    <defs><mask id="hole"><rect width="${W}" height="${H}" fill="#fff"/>
+      <circle cx="${sx}" cy="${sy}" r="${sr}" fill="#000"/>
+      ${cfg.grayCard ? `<circle cx="${gx}" cy="${gy}" r="${gr}" fill="#000"/>` : ''}
+    </mask></defs>
+    <rect width="${W}" height="${H}" fill="#000" fill-opacity="0.35" mask="url(#hole)"/>
+    <circle cx="${sx}" cy="${sy}" r="${sr}" fill="none" stroke="#00e0c6" stroke-width="${sw}"/>
+    ${lbl(sx, sy - sr - fs*0.4, 'PIEL', '#00e0c6')}
+    ${cfg.grayCard ? `<circle cx="${gx}" cy="${gy}" r="${gr}" fill="none" stroke="#ffd400" stroke-width="${sw}" stroke-dasharray="${sw*3} ${sw*2}"/>
+      ${lbl(gx, gy - gr - fs*0.4, 'TARJETA GRIS', '#ffd400')}` : ''}`;
+}
+overlay.addEventListener('pointerdown', e => {
+  const [W, H] = stageDims(); if (!W) return;
+  const ctm = overlay.getScreenCTM(); if (!ctm) return;
+  const pt = overlay.createSVGPoint(); pt.x = e.clientX; pt.y = e.clientY;
+  const p = pt.matrixTransform(ctm.inverse());
+  if (moveTarget === 'gray' && !cfg.grayCard) return;
+  const key = moveTarget === 'gray' ? 'grayPos' : 'skinPos';
+  const r = moveTarget === 'gray' ? cfg.grayR : cfg.skinR;
+  cfg[key] = clampPos({ x: p.x/W, y: p.y/H }, r, W, H);
+  saveCfg(); drawOverlay();
+  if (mode === 'review' && pending){ pending.result = analyze(pending.canvas); renderShotResult(); }
+});
+function setMove(t){ moveTarget = t; $('#mv-skin').classList.toggle('sel', t === 'skin'); $('#mv-gray').classList.toggle('sel', t === 'gray'); }
+$('#mv-skin').onclick = () => setMove('skin');
+$('#mv-gray').onclick = () => setMove('gray');
+
+let liveMsg = '';
+function stageMsg(t){ liveMsg = t || ''; const m = $('#stage-msg'); m.hidden = !liveMsg || mode !== 'live'; m.textContent = liveMsg; }
+
+function enterCam(){
+  setMove('skin');
+  $('#mv-gray').hidden = !cfg.grayCard;
+  setMode('live');
+  renderShots();
+  startCamera();
+}
+function setMode(m){
+  mode = m;
+  video.hidden = m !== 'live';
+  shotCv.hidden = m !== 'review';
+  $('#cam-live-ctrls').hidden = m !== 'live';
+  $('#cam-review').hidden = m !== 'review';
+  $('#stage-msg').hidden = !liveMsg || m !== 'live';
+  $('#cam-count').textContent = `Foto ${Math.min(cur.shots.length + 1, cfg.photos)} de ${cfg.photos}`;
+  drawOverlay();
+}
+
+const hasMode = (list, m) => Array.isArray(list) && list.includes(m);
+const clampCap = (v, c) => (c && typeof c.min === 'number') ? Math.min(c.max, Math.max(c.min, v)) : v;
+function camLockText(v){
+  const parts = [];
+  if (v.exposureTime != null) parts.push(`exposición ${v.exposureTime}`);
+  if (v.iso != null) parts.push(`ISO ${v.iso}`);
+  if (v.colorTemperature != null) parts.push(`${v.colorTemperature} K`);
+  return parts.join(' · ') || 'modo manual';
+}
+
+async function startCamera(){
+  if (cam.stream) return;
+  if (!window.isSecureContext || !navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){
+    stageMsg('La cámara en vivo necesita HTTPS. Usa “Usar app de cámara” (con el flash apagado).');
+    $('#btn-capture').disabled = true; $('#btn-lock').disabled = true;
+    renderCaps(); return;
+  }
+  stageMsg('Abriendo cámara…');
+  try {
+    cam.stream = await navigator.mediaDevices.getUserMedia({ audio: false, video: {
+      facingMode: { ideal: 'environment' }, width: { ideal: 1920 }, height: { ideal: 1080 } } });
+  } catch (err){
+    stageMsg(err && err.name === 'NotAllowedError'
+      ? 'Permiso de cámara denegado. Actívalo en el navegador o usa “Usar app de cámara”.'
+      : 'No se pudo abrir la cámara (' + (err && err.name || 'error') + '). Usa “Usar app de cámara”.');
+    $('#btn-capture').disabled = true; $('#btn-lock').disabled = true;
+    renderCaps(); return;
+  }
+  if (!$('#v-cam').classList.contains('on')){ stopCamera(); return; }
+  cam.track = cam.stream.getVideoTracks()[0];
+  cam.caps = cam.track.getCapabilities ? cam.track.getCapabilities() : {};
+  video.srcObject = cam.stream;
+  try { await video.play(); } catch(e){}
+  await new Promise(res => video.videoWidth ? res() : video.addEventListener('loadedmetadata', res, { once: true }));
+  stageMsg('');
+  $('#btn-capture').disabled = false;
+  if (cam.caps.torch){ try { await cam.track.applyConstraints({ advanced: [{ torch: false }] }); } catch(e){} }
+  cam.locked = false;
+  if (cfg.reapplyLock && cfg.camLock){ cam.locked = await applyLock(cfg.camLock); }
+  readSettings(); renderCaps(); drawOverlay();
+}
+function stopCamera(){
+  if (cam.stream){ cam.stream.getTracks().forEach(t => t.stop()); }
+  cam.stream = null; cam.track = null; cam.locked = false;
+  video.srcObject = null;
+}
+function readSettings(){
+  cam.settings = cam.track && cam.track.getSettings ? cam.track.getSettings() : {};
+}
+async function applyLock(vals){
+  const c = cam.caps, adv = {};
+  if (hasMode(c.exposureMode, 'manual')){
+    adv.exposureMode = 'manual';
+    if (vals.exposureTime != null && c.exposureTime) adv.exposureTime = clampCap(vals.exposureTime, c.exposureTime);
+    if (vals.iso != null && c.iso) adv.iso = clampCap(vals.iso, c.iso);
+  }
+  if (hasMode(c.whiteBalanceMode, 'manual')){
+    adv.whiteBalanceMode = 'manual';
+    if (vals.colorTemperature != null && c.colorTemperature) adv.colorTemperature = clampCap(vals.colorTemperature, c.colorTemperature);
+  }
+  if (!Object.keys(adv).length) return false;
+  try { await cam.track.applyConstraints({ advanced: [adv] }); return true; }
+  catch(e){
+    try { await cam.track.applyConstraints({ advanced: [{ exposureMode: adv.exposureMode, whiteBalanceMode: adv.whiteBalanceMode }] }); return true; }
+    catch(e2){ return false; }
+  }
+}
+$('#btn-lock').onclick = async () => {
+  if (!cam.track) return;
+  if (cam.locked){
+    if (!confirm('La cámara ya está fijada. ¿Volver a medir con la luz actual? Hazlo solo al inicio de la sesión.')) return;
+    try { await cam.track.applyConstraints({ advanced: [{ exposureMode: 'continuous', whiteBalanceMode: 'continuous' }] }); } catch(e){}
+    cam.locked = false; renderCaps();
+    stageMsg('Reajustando… apunta a la piel y la tarjeta 2 segundos.');
+    await new Promise(r => setTimeout(r, 2000)); stageMsg('');
+  }
+  readSettings();
+  const s = cam.settings;
+  const vals = { exposureTime: s.exposureTime, iso: s.iso, colorTemperature: s.colorTemperature };
+  cam.locked = await applyLock(vals);
+  readSettings();
+  if (cam.locked){
+    const st = cam.settings;
+    cfg.camLock = { exposureTime: st.exposureTime != null ? st.exposureTime : vals.exposureTime, iso: st.iso != null ? st.iso : vals.iso, colorTemperature: st.colorTemperature != null ? st.colorTemperature : vals.colorTemperature };
+    saveCfg();
+  } else {
+    alert('Este navegador no permite fijar la exposición ni el balance de blancos. Usa la tarjeta gris en cada foto.');
+  }
+  renderCaps();
+};
+function renderCaps(){
+  const c = cam.caps || {};
+  const exp = hasMode(c.exposureMode, 'manual'), wb = hasMode(c.whiteBalanceMode, 'manual');
+  let h = '';
+  if (cam.track){
+    h += `<span class="badge ${exp ? 'b-ok' : 'b-warn'}">Exposición ${exp ? 'fijable' : 'automática'}</span>`;
+    h += `<span class="badge ${wb ? 'b-ok' : 'b-warn'}">Balance de blancos ${wb ? 'fijable' : 'automático'}</span>`;
+    h += cam.locked ? `<span class="badge b-info">Fijada: ${esc(camLockText(cfg.camLock || {}))}</span>` : `<span class="badge b-warn">Cámara sin fijar</span>`;
+  }
+  h += cfg.grayCard ? `<span class="badge b-info">Tarjeta gris activa</span>` : `<span class="badge b-warn">Sin tarjeta gris</span>`;
+  $('#cam-caps').innerHTML = h;
+  $('#btn-lock').textContent = cam.locked ? 'Volver a fijar' : 'Fijar cámara';
+}
+
+$('#btn-capture').onclick = () => {
+  if (!video.videoWidth) return;
+  const c = document.createElement('canvas');
+  c.width = video.videoWidth; c.height = video.videoHeight;
+  c.getContext('2d', { willReadFrequently: true }).drawImage(video, 0, 0, c.width, c.height);
+  readSettings();
+  const s = cam.settings;
+  setPending(c, 'camara_web', {
+    locked: !!cam.locked, exposureMode: s.exposureMode, exposureTime: s.exposureTime, iso: s.iso,
+    whiteBalanceMode: s.whiteBalanceMode, colorTemperature: s.colorTemperature, torch: s.torch
+  });
+};
+$('#btn-file').onclick = () => $('#file-in').click();
+$('#file-in').onchange = async e => {
+  const f = e.target.files && e.target.files[0]; e.target.value = '';
+  if (!f) return;
+  try {
+    const url = URL.createObjectURL(f);
+    const img = new Image(); img.src = url; await img.decode();
+    let W = img.naturalWidth, H = img.naturalHeight;
+    const s = Math.min(1, 4000/Math.max(W, H)); W = Math.round(W*s); H = Math.round(H*s);
+    const c = document.createElement('canvas'); c.width = W; c.height = H;
+    c.getContext('2d', { willReadFrequently: true }).drawImage(img, 0, 0, W, H);
+    URL.revokeObjectURL(url);
+    setPending(c, 'app_camara', { locked: false });
+  } catch(err){ alert('No se pudo leer la imagen.'); }
+};
+function setPending(canvas, source, camInfo){
+  pending = { canvas, source, cam: camInfo, time: isoLocal(new Date()) };
+  shotCv.width = canvas.width; shotCv.height = canvas.height;
+  shotCv.getContext('2d').drawImage(canvas, 0, 0);
+  pending.result = analyze(canvas);
+  setMode('review');
+  renderShotResult();
+}
+function flagBadges(flags){
+  return flags.map(f => { const [lvl, txt] = FLAG_INFO[f] || ['warn', f]; return `<span class="badge b-${lvl}">${esc(txt)}</span>`; }).join('');
+}
+function renderShotResult(){
+  const r = pending.result;
+  if (!r.ok){ $('#shot-result').innerHTML = `<div class="alert bad">No se pudo analizar la imagen.</div>`; $('#btn-accept').disabled = true; return; }
+  const bad = r.flags.some(f => (FLAG_INFO[f] || [])[0] === 'bad');
+  const cat = itaCat(r.ITA);
+  $('#shot-result').innerHTML = `
+    <div class="row"><div class="grow"><div class="big">${fmt(r.ITA)}°</div><div>${esc(cat.es)}</div></div>
+    <div class="small muted" style="text-align:right">L* ${fmt(r.L)} · a* ${fmt(r.a)} · b* ${fmt(r.b)}<br>${r.nPixels.toLocaleString('es')} px · DE L* ${fmt(r.sdL)}</div></div>
+    <div style="margin-top:6px">${flagBadges(r.flags) || '<span class="badge b-ok">Calidad correcta</span>'}</div>
+    ${bad ? '<div class="alert bad">Se recomienda repetir la foto.</div>' : ''}
+    <p class="small muted">Toca la imagen para mover el círculo seleccionado; el cálculo se actualiza.</p>`;
+  $('#btn-accept').disabled = false;
+}
+$('#btn-retake').onclick = () => { pending = null; setMode('live'); if (!cam.stream) startCamera(); };
+$('#btn-accept').onclick = () => {
+  const r = pending.result;
+  if (r.flags.some(f => (FLAG_INFO[f] || [])[0] === 'bad') && !confirm('Esta foto tiene problemas de calidad. ¿Aceptarla de todas formas?')) return;
+  cur.shots.push({
+    ITA: r.ITA, L: r.L, a: r.a, b: r.b, ITA_uncorrected: r.ITA_uncorrected,
+    grayUsed: r.grayUsed, gains: r.gains, flags: r.flags.slice(), source: pending.source,
+    cam: pending.cam, W: r.W, H: r.H, time: pending.time
+  });
+  pending = null;
+  if (cur.shots.length >= cfg.photos){ show('sum'); return; }
+  setMode('live'); renderShots();
+};
+function renderShots(){
+  $('#shots').innerHTML = cur.shots.map((s, i) => `<span class="badge b-info">#${i+1}: ${fmt(s.ITA)}°</span>`).join('');
+  $('#btn-finish-early').hidden = !(cur.shots.length > 0 && cur.shots.length < cfg.photos);
+}
+$('#btn-finish-early').onclick = () => show('sum');
+$('#btn-cam-back').onclick = () => { renderFitz(); show('fitz'); };
+
+/* ---------- resumen ---------- */
+const mean = a => a.reduce((s, v) => s + v, 0) / a.length;
+const sd = a => a.length < 2 ? null : Math.sqrt(a.reduce((s, v) => s + (v - mean(a))**2, 0) / (a.length - 1));
+function buildRecord(){
+  const S = cur.shots, fz = fitzResult();
+  const itas = S.map(s => s.ITA);
+  const ITA_mean = mean(itas), ITA_sd = sd(itas);
+  const flags = new Set(); S.forEach(s => s.flags.forEach(f => flags.add(f)));
+  if (ITA_sd != null && ITA_sd > 3) flags.add('variabilidad_alta');
+  const cat = itaCat(ITA_mean);
+  const c0 = (S[0] && S[0].cam) || {};
+  const rec = {
+    uid: cur.uid,
+    participant_id: cur.participant_id,
+    timestamp: cur.timestamp,
+    photo_time_first: S[0] ? S[0].time : '',
+    operator: cfg.operator,
+    device_label: cfg.device,
+    body_site: cfg.site,
+    n_photos: S.length,
+    L_mean: mean(S.map(s => s.L)), a_mean: mean(S.map(s => s.a)), b_mean: mean(S.map(s => s.b)),
+    ITA_mean, ITA_sd,
+    ITA_per_photo: itas.map(v => v.toFixed(2)).join(';'),
+    ITA_category: cat.code, ITA_category_es: cat.es,
+    ITA_uncorrected_mean: mean(S.map(s => s.ITA_uncorrected)),
+    gray_card_used: S.every(s => s.grayUsed),
+    wb_gains_rgb: S.map(s => s.gains.map(g => g.toFixed(3)).join('/')).join(';'),
+    capture_source: [...new Set(S.map(s => s.source))].join(';'),
+    cam_locked: S.every(s => s.cam && s.cam.locked),
+    cam_exposure_mode: c0.exposureMode, cam_exposure_time: c0.exposureTime, cam_iso: c0.iso,
+    cam_wb_mode: c0.whiteBalanceMode, cam_color_temp: c0.colorTemperature,
+    image_size: S[0] ? `${S[0].W}x${S[0].H}` : '',
+    quality_flags: [...flags].join(';'),
+    fitz_score: fz.score, fitz_type: fz.type ? ROMAN[fz.type-1] : '', fitz_type_num: fz.type,
+    notes: $('#sum-notes').value.trim(),
+    user_agent: navigator.userAgent,
+    app_version: APP_VERSION
+  };
+  cur.fitz.forEach((v, i) => rec['fitz_q' + (i+1)] = v);
+  return rec;
+}
+function renderSummary(){
+  $('#sum-notes').value = cur.notes || '';
+  if (!cur.shots.length){ $('#sum-body').innerHTML = '<p>No hay fotos aceptadas.</p>'; $('#sum-save').disabled = true; return; }
+  $('#sum-save').disabled = false;
+  const r = buildRecord();
+  const flags = r.quality_flags ? r.quality_flags.split(';') : [];
+  $('#sum-body').innerHTML = `
+    <p class="muted small">${esc(r.participant_id)} · ${esc(r.timestamp.replace('T',' ').slice(0,16))}</p>
+    <div class="stats">
+      <div class="stat"><b>${fmt(r.ITA_mean)}°</b><span>ITA medio${r.ITA_sd != null ? ' ± ' + fmt(r.ITA_sd) : ''} · ${esc(r.ITA_category_es)}</span></div>
+      <div class="stat"><b>Tipo ${esc(r.fitz_type)}</b><span>Fitzpatrick · puntaje ${r.fitz_score}/40</span></div>
+    </div>
+    <p class="small" style="margin-top:10px">L* ${fmt(r.L_mean)} · a* ${fmt(r.a_mean)} · b* ${fmt(r.b_mean)} · ${r.n_photos} foto(s): ${esc(r.ITA_per_photo.replace(/;/g, ' · '))}</p>
+    <div>${flagBadges(flags) || '<span class="badge b-ok">Sin alertas de calidad</span>'}</div>`;
+}
+$('#sum-notes').oninput = e => { cur.notes = e.target.value; };
+$('#sum-back').onclick = () => {
+  if (cur.shots.length >= cfg.photos && !confirm('Ya tienes todas las fotos. ¿Reemplazar la última?')) return;
+  if (cur.shots.length >= cfg.photos) cur.shots.pop();
+  show('cam');
+};
+$('#sum-discard').onclick = () => {
+  if (!confirm('¿Descartar este participante? No se guardará nada.')) return;
+  cur = null; show('home');
+};
+$('#sum-save').onclick = () => {
+  cur.notes = $('#sum-notes').value;
+  records.push(buildRecord());
+  saveRecords();
+  cur = null;
+  $('#btn-new').click();
+};
+
+/* ---------- exportar CSV ---------- */
+const CSV_COLS = ['participant_id','timestamp','photo_time_first','operator','device_label','body_site','n_photos',
+  'L_mean','a_mean','b_mean','ITA_mean','ITA_sd','ITA_per_photo','ITA_category','ITA_category_es','ITA_uncorrected_mean',
+  'gray_card_used','wb_gains_rgb','capture_source','cam_locked','cam_exposure_mode','cam_exposure_time','cam_iso',
+  'cam_wb_mode','cam_color_temp','image_size','quality_flags',
+  'fitz_q1','fitz_q2','fitz_q3','fitz_q4','fitz_q5','fitz_q6','fitz_q7','fitz_q8','fitz_q9','fitz_q10',
+  'fitz_score','fitz_type','fitz_type_num','notes','user_agent','app_version'];
+function csvCell(v){
+  if (v == null) return '';
+  if (typeof v === 'number') return isFinite(v) ? (Number.isInteger(v) ? String(v) : v.toFixed(3)) : '';
+  if (typeof v === 'boolean') return v ? 'true' : 'false';
+  const s = String(v);
+  return /[",\n\r]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
+}
+function exportCSV(){
+  if (!records.length){ alert('No hay registros para exportar.'); return; }
+  const lines = [CSV_COLS.join(',')].concat(records.map(r => CSV_COLS.map(c => csvCell(r[c])).join(',')));
+  const blob = new Blob(['﻿' + lines.join('\r\n') + '\r\n'], { type: 'text/csv;charset=utf-8' });
+  const d = new Date(), p = n => String(n).padStart(2, '0');
+  const name = `ita_fitzpatrick_${cfg.device ? cfg.device.replace(/[^\w-]+/g, '_') + '_' : ''}${d.getFullYear()}${p(d.getMonth()+1)}${p(d.getDate())}_${p(d.getHours())}${p(d.getMinutes())}.csv`;
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob); a.download = name;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+  records.forEach(r => r._exported = true); saveRecords(); renderHome();
+}
+
+/* ---------- arranque ---------- */
+window.addEventListener('beforeunload', e => { if (cur && cur.shots.length){ e.preventDefault(); e.returnValue = ''; } });
+document.addEventListener('visibilitychange', () => { if (document.hidden) stopCamera(); else if ($('#v-cam').classList.contains('on') && mode === 'live') startCamera(); });
+if ('serviceWorker' in navigator && window.isSecureContext){ navigator.serviceWorker.register('sw.js').catch(() => {}); }
+
+// Ganchos para pruebas
+window.__ita = { linToLab, itaDeg, itaCat, analyze, fitzType, LIN, cfg: () => cfg };
+
+show('home');
+})();
+</script>
+</body>
+</html>
